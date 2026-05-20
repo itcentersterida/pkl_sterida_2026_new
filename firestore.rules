@@ -40,9 +40,10 @@ service cloud.firestore {
     }
 
     // users Collection
-    // Only the actual owner or matching pre-registered email user can read/write their own profile
+    // Admins can read and write all users. Signed-in users can read profiles to sync details. Users can manage their own profiles.
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || 
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isOwner(userId) || 
         (isSignedIn() && request.auth.token.email != null && request.auth.token.email.toLowerCase() == userId);
     }
 
@@ -54,36 +55,43 @@ service cloud.firestore {
     }
 
     // assignments Collection
-    // Strictly restricted to the involved student or supervisor of the assignment
+    // Admin, supervisor and the student assigned can manage/read assignments
     match /assignments/{assignmentId} {
       allow read, write: if isSignedIn() && (
+        isAdmin() ||
         (resource != null && (resource.data.studentId == request.auth.uid || resource.data.supervisorId == request.auth.uid)) ||
         (request.resource != null && (request.resource.data.studentId == request.auth.uid || request.resource.data.supervisorId == request.auth.uid))
       );
     }
 
     // attendance Collection
-    // Strictly restricted to only the student who owns the attendance record
+    // Admin, supervisor, and the respective student can read/write attendance records
     match /attendance/{attendanceId} {
       allow read, write: if isSignedIn() && (
+        isAdmin() ||
+        isSupervisor() ||
         (resource != null && resource.data.studentId == request.auth.uid) ||
         (request.resource != null && request.resource.data.studentId == request.auth.uid)
       );
     }
 
     // journals Collection
-    // Strictly restricted to only the student who wrote/owns the daily journal
+    // Admin, supervisor, and the respective student can read/write journal entries
     match /journals/{journalId} {
       allow read, write: if isSignedIn() && (
+        isAdmin() ||
+        isSupervisor() ||
         (resource != null && resource.data.studentId == request.auth.uid) ||
         (request.resource != null && request.resource.data.studentId == request.auth.uid)
       );
     }
 
     // activityLogs Collection
-    // Strictly restricted to only the user performing/logging the activity
+    // Admin, supervisor, and respective user can manage activity logs
     match /activityLogs/{logId} {
       allow read, write: if isSignedIn() && (
+        isAdmin() ||
+        isSupervisor() ||
         (resource != null && resource.data.userId == request.auth.uid) ||
         (request.resource != null && request.resource.data.userId == request.auth.uid)
       );
