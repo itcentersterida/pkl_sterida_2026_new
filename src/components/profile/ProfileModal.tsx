@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { db } from '../../lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { db, doc, updateDoc } from '../../lib/firebase';
 import { 
   X, 
   Camera, 

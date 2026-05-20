@@ -40,11 +40,10 @@ service cloud.firestore {
     }
 
     // users Collection
-    // Admin, Owners, and pre-registered emails match
+    // Only the actual owner or matching pre-registered email user can read/write their own profile
     match /users/{userId} {
       allow read, write: if isOwner(userId) || 
-        (isSignedIn() && request.auth.token.email != null && request.auth.token.email.toLowerCase() == userId) || 
-        isAdmin();
+        (isSignedIn() && request.auth.token.email != null && request.auth.token.email.toLowerCase() == userId);
     }
 
     // locations Collection
@@ -55,39 +54,39 @@ service cloud.firestore {
     }
 
     // assignments Collection
-    // Admins and involved students/supervisors can access
+    // Strictly restricted to the involved student or supervisor of the assignment
     match /assignments/{assignmentId} {
-      allow read, write: if isAdmin() || (isSignedIn() && (
+      allow read, write: if isSignedIn() && (
         (resource != null && (resource.data.studentId == request.auth.uid || resource.data.supervisorId == request.auth.uid)) ||
         (request.resource != null && (request.resource.data.studentId == request.auth.uid || request.resource.data.supervisorId == request.auth.uid))
-      ));
+      );
     }
 
     // attendance Collection
-    // Admins, Supervisors and owners can read/write
+    // Strictly restricted to only the student who owns the attendance record
     match /attendance/{attendanceId} {
-      allow read, write: if isAdmin() || isSupervisor() || (isSignedIn() && (
+      allow read, write: if isSignedIn() && (
         (resource != null && resource.data.studentId == request.auth.uid) ||
         (request.resource != null && request.resource.data.studentId == request.auth.uid)
-      ));
+      );
     }
 
     // journals Collection
-    // Admins, Supervisors and owners can read/write
+    // Strictly restricted to only the student who wrote/owns the daily journal
     match /journals/{journalId} {
-      allow read, write: if isAdmin() || isSupervisor() || (isSignedIn() && (
+      allow read, write: if isSignedIn() && (
         (resource != null && resource.data.studentId == request.auth.uid) ||
         (request.resource != null && request.resource.data.studentId == request.auth.uid)
-      ));
+      );
     }
 
     // activityLogs Collection
-    // Admins and logging users can read/write
+    // Strictly restricted to only the user performing/logging the activity
     match /activityLogs/{logId} {
-      allow read, write: if isAdmin() || (isSignedIn() && (
+      allow read, write: if isSignedIn() && (
         (resource != null && resource.data.userId == request.auth.uid) ||
         (request.resource != null && request.resource.data.userId == request.auth.uid)
-      ));
+      );
     }
   }
 }

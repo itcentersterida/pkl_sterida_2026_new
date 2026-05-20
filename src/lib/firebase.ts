@@ -27,7 +27,7 @@ import {
   type DocumentReference,
   type Query,
   type WriteBatch
-} from 'firebase/firestore';
+} from './mockFirestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDrVS9_2hZmqSf5AtaOr76iFKduFc9jxNI",
