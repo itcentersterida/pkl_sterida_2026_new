@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email in ['itcentersterida@gmail.com', 'irfanpriyono68@guru.smk.belajar.id'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isSupervisor() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supervisor'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // users Collection
+    // Admin, Owners, and pre-registered emails match
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || 
+        (isSignedIn() && request.auth.token.email != null && request.auth.token.email.toLowerCase() == userId) || 
+        isAdmin();
+    }
+
+    // locations Collection
+    // Anyone signed in can read (to choose/view locations), only admin can manage/write
+    match /locations/{locationId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // assignments Collection
+    // Admins and involved students/supervisors can access
+    match /assignments/{assignmentId} {
+      allow read, write: if isAdmin() || (isSignedIn() && (
+        (resource != null && (resource.data.studentId == request.auth.uid || resource.data.supervisorId == request.auth.uid)) ||
+        (request.resource != null && (request.resource.data.studentId == request.auth.uid || request.resource.data.supervisorId == request.auth.uid))
+      ));
+    }
+
+    // attendance Collection
+    // Admins, Supervisors and owners can read/write
+    match /attendance/{attendanceId} {
+      allow read, write: if isAdmin() || isSupervisor() || (isSignedIn() && (
+        (resource != null && resource.data.studentId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.studentId == request.auth.uid)
+      ));
+    }
+
+    // journals Collection
+    // Admins, Supervisors and owners can read/write
+    match /journals/{journalId} {
+      allow read, write: if isAdmin() || isSupervisor() || (isSignedIn() && (
+        (resource != null && resource.data.studentId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.studentId == request.auth.uid)
+      ));
+    }
+
+    // activityLogs Collection
+    // Admins and logging users can read/write
+    match /activityLogs/{logId} {
+      allow read, write: if isAdmin() || (isSignedIn() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (request.resource != null && request.resource.data.userId == request.auth.uid)
+      ));
+    }
+  }
+}

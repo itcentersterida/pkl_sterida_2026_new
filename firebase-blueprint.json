@@ -1,0 +1,152 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "supervisor", "student"] },
+        "photoURL": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "class": { "type": "string" },
+        "major": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role", "status"]
+    },
+    "Location": {
+      "title": "Internship Location",
+      "description": "Internship location with GPS coordinates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "radius": { "type": "number" },
+        "supervisorIds": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "latitude", "longitude", "radius"]
+    },
+    "Assignment": {
+      "title": "Internship Assignment",
+      "description": "Links a student to a location and supervisor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "locationId": { "type": "string" },
+        "supervisorId": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "completed"] },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "locationId", "supervisorId", "status"]
+    },
+    "Attendance": {
+      "title": "Attendance record",
+      "description": "Student attendance record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "locationId": { "type": "string" },
+        "date": { "type": "string" },
+        "checkIn": {
+          "type": "object",
+          "properties": {
+            "time": { "type": "string", "format": "date-time" },
+            "photoURL": { "type": "string" },
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "status": { "type": "string", "enum": ["valid", "invalid"] }
+          }
+        },
+        "checkOut": {
+          "type": "object",
+          "properties": {
+            "time": { "type": "string", "format": "date-time" },
+            "photoURL": { "type": "string" },
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "status": { "type": "string", "enum": ["valid", "invalid"] }
+          }
+        },
+        "type": { "type": "string", "enum": ["present", "permit", "sick"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "locationId", "date", "type"]
+    },
+    "Journal": {
+      "title": "Daily Journal",
+      "description": "Daily activity journal by student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "locationId": { "type": "string" },
+        "date": { "type": "string" },
+        "content": { "type": "string" },
+        "photos": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "supervisorSignature": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "studentId", "locationId", "date", "content", "status"]
+    },
+    "ActivityLog": {
+      "title": "Activity Log",
+      "description": "Log of actions performed in the system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["supervisor_action", "student_activity"] },
+        "action": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["id", "type", "action", "userId", "userName", "timestamp"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    },
+    "locations": {
+      "schema": "Location",
+      "description": "Collection of internship locations"
+    },
+    "assignments": {
+      "schema": "Assignment",
+      "description": "Collection of internship assignments"
+    },
+    "attendance": {
+      "schema": "Attendance",
+      "description": "Collection of attendance records"
+    },
+    "journals": {
+      "schema": "Journal",
+      "description": "Collection of daily journals"
+    },
+    "activityLogs": {
+      "schema": "ActivityLog",
+      "description": "Collection of activity logs"
+    }
+  }
+}

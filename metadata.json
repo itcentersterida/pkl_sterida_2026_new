@@ -1,0 +1,16 @@
+{
+  "name": "Remix: InternLog - Internship Monitoring \u0026 Attendance",
+  "description": "A comprehensive platform for monitoring student internships with face-verified attendance, GPS tracking, and daily activity journals.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API",
+    "Face-verified Attendance",
+    "GPS Radius Verification",
+    "Daily Activity Journaling",
+    "Supervisor Digital Signature",
+    "PDF Report Export"
+  ]
+}
