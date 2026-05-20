@@ -46,6 +46,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     }
   }, [profile, isOpen]);
 
+  // Cleanup camera stream when modal closes
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
   // Handle file selection (and canvas resizing/compression)
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -149,13 +156,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     }
     setIsCameraActive(false);
   }
-
-  // Cleanup camera stream when modal closes
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
 
   function capturePhoto() {
     if (videoRef.current && canvasRef.current && isCameraActive) {

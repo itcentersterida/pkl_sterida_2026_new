@@ -23,11 +23,12 @@ import {
   getDoc,
   writeBatch,
   Timestamp,
+  getDocFromServer,
   type CollectionReference,
   type DocumentReference,
   type Query,
   type WriteBatch
-} from './mockFirestore';
+} from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDrVS9_2hZmqSf5AtaOr76iFKduFc9jxNI",
@@ -42,6 +43,20 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+    console.log("Firebase Firestore connected successfully.");
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn("Firestore connection check deferred: Client appears offline.", error);
+    } else {
+      console.log("Firestore connection check run:", error);
+    }
+  }
+}
+testConnection();
 export { 
   collection, 
   query, 

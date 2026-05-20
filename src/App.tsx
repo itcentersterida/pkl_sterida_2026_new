@@ -82,16 +82,31 @@ const Login = () => {
         setFormLoading(false);
       }
     } catch (err: any) {
-      console.error(err);
+      const errStr = (err.code || err.message || '').toString();
       let errMsg = 'Terjadi kesalahan. Silakan coba lagi.';
-      if (err.code === 'auth/email-already-in-use') {
-        errMsg = 'Email sudah digunakan oleh akun lain.';
-      } else if (err.code === 'auth/invalid-email') {
+      
+      if (errStr.includes('auth/email-already-in-use') || err.code === 'auth/email-already-in-use') {
+        errMsg = 'Email sudah digunakan oleh akun lain. Silakan periksa kata sandi atau gunakan email lain.';
+        console.warn('Auth notice:', err.message || err);
+      } else if (errStr.includes('auth/invalid-email') || err.code === 'auth/invalid-email') {
         errMsg = 'Format email tidak valid.';
-      } else if (err.code === 'auth/weak-password') {
+        console.warn('Auth notice:', err.message || err);
+      } else if (errStr.includes('auth/weak-password') || err.code === 'auth/weak-password') {
         errMsg = 'Kata sandi minimal berisi 6 karakter.';
-      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        console.warn('Auth notice:', err.message || err);
+      } else if (
+        errStr.includes('auth/user-not-found') || 
+        errStr.includes('auth/wrong-password') || 
+        errStr.includes('auth/invalid-credential') || 
+        err.code === 'auth/user-not-found' || 
+        err.code === 'auth/wrong-password' || 
+        err.code === 'auth/invalid-credential'
+      ) {
         errMsg = 'Email atau kata sandi tidak sesuai.';
+        console.warn('Auth notice:', err.message || err);
+      } else {
+        errMsg = err.message || errMsg;
+        console.error('Core Auth error:', err);
       }
       setError(errMsg);
       setFormLoading(false);

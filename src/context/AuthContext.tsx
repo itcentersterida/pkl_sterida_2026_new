@@ -222,8 +222,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         await setDoc(userDocRef, newProfile);
       }
-    } catch (error) {
-      console.error('Email registration failed', error);
+    } catch (error: any) {
+      const errorStr = (error.code || error.message || '').toString();
+      if (errorStr.includes('auth/email-already-in-use') || error.code === 'auth/email-already-in-use') {
+        console.log('User already exists. Seamlessly performing sign-in instead...');
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          return;
+        } catch (loginError: any) {
+          console.warn('Registration fallback sign-in warning:', loginError);
+          const customError = new Error('Email sudah digunakan oleh akun lain. Silakan periksa kata sandi atau masuk.');
+          (customError as any).code = 'auth/email-already-in-use';
+          throw customError;
+        }
+      }
+      console.warn('Email registration warning:', error);
       throw error;
     }
   };
